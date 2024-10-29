@@ -8,6 +8,7 @@ import {
   Revenue,
 } from './definitions';
 import { formatCurrency } from './utils';
+import { unstable_noStore } from 'next/cache';
 
 const client = await sql.connect();
 
@@ -143,6 +144,7 @@ export async function fetchInvoicesPages(query: string) {
 }
 
 export async function fetchInvoiceById(id: string) {
+  unstable_noStore
   try {
     const data = await client.sql<InvoiceForm>`
       SELECT
@@ -154,12 +156,15 @@ export async function fetchInvoiceById(id: string) {
       WHERE invoices.id = ${id};
     `;
 
+    
     const invoice = data.rows.map((invoice) => ({
       ...invoice,
       // Convert amount from cents to dollars
       amount: invoice.amount / 100,
     }));
 
+    console.log(invoice); // Invoice is an empty array []
+    
     return invoice[0];
   } catch (error) {
     console.error('Database Error:', error);
